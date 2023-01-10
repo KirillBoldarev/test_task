@@ -1,30 +1,90 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <main class="app__container">
+    <fieldset class="flex-column">
+      <legend>Данные для парсинга</legend>
+      <div class="flex-column center">
+        <div class="flex-row">
+          <label for="name">Введите наименование</label>
+          <input v-model="productName" id="name" type="text" />
+        </div>
+        <div class="flex-row">
+          <label for="name">Введите бренд</label>
+          <input v-model="productBrand" id="brand" type="text" />
+        </div>
+      </div>
+      <button @click="parser">Поиск</button>
+    </fieldset>
+
+    <ul>
+      <li
+        v-for="(brand, i) in brandList"
+        :key="i"
+        :class="{
+          bigGreen: brand.toUpperCase() === productBrand.toUpperCase(),
+        }"
+      >
+        {{ brand }}
+      </li>
+    </ul>
+  </main>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+<script setup>
+import { ref, watch } from "vue";
+import axios from "axios";
+
+const productName = ref("");
+const productBrand = ref("");
+const brandList = ref(new Set());
+
+function parser() {
+  brandList.value.clear();
+  axios
+    .get(
+      `https://search.wb.ru/exactmatch/ru/common/v4/search?appType=1&dest=-1029256,-102269,-2162196,-1257786&locale=ru&query=${productName.value}&resultset=catalog`
+    )
+    .then((result) => {
+      if (result.data.data) {
+        result.data.data.products.forEach((product) => {
+          brandList.value.add(product.brand);
+        });
+      }
+    })
+    .catch((error) => console.log(error));
 }
 
-nav {
-  padding: 30px;
+watch(productName, () => {
+  parser();
+});
+</script>
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+<style lang="scss">
+.app {
+  &__container {
+    max-width: 767px;
+    margin: auto;
   }
+}
+.bigGreen {
+  font-weight: 700;
+  text-decoration: underline;
+  color: green;
+  font-size: 24px;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.center {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 </style>
