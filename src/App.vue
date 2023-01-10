@@ -43,7 +43,6 @@ function parser() {
       `https://search.wb.ru/exactmatch/ru/common/v4/search?appType=1&dest=-1029256,-102269,-2162196,-1257786&locale=ru&query=${productName.value}&resultset=catalog`
     )
     .then((result) => {
-      console.log(result);
       if (result.data.data) {
         result.data.data.products.forEach((product) => {
           brandList.value.add(product.brand);
